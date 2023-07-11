@@ -10,7 +10,11 @@ export class User extends Document {
   password: string;
 
   async comparePassword(candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.password);
+    const isPasswordValid = await bcrypt.compare(
+      candidatePassword,
+      this.password,
+    );
+    return isPasswordValid;
   }
 }
 
