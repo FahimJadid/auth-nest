@@ -17,5 +17,5 @@ export class User extends Document {
     return isPasswordValid;
   }
 }
-
+export type UserDocument = User & Document;
 export const UserModel = SchemaFactory.createForClass(User);

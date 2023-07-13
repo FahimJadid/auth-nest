@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserSignUpDto } from './dtos/user-signup.dto';
 import { UserLoginDto } from './dtos/user-login.dto';
-import { User } from './models/user.model';
+import { User, UserDocument } from './models/user.model';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async signUp(userSignUpDto: UserSignUpDto) {
@@ -21,7 +23,7 @@ export class AuthService {
     return newUser.save();
   }
 
-  async login(userLoginDto: UserLoginDto): Promise<User> {
+  async login(userLoginDto: UserLoginDto) {
     // retrieve user
     const { email, password } = userLoginDto;
     const user = await this.userModel.findOne({ email }).exec();
@@ -33,6 +35,13 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    return user;
+
+    const token = await this.signUser(user.id, user.email);
+    return { user, token };
+  }
+
+  async signUser(userId: string, email: string): Promise<string> {
+    const payload = { sub: userId, email };
+    return this.jwtService.sign(payload);
   }
 }
