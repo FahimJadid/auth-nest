@@ -37,7 +37,8 @@ export class AuthService {
     }
 
     const token = await this.signUser(user.id, user.email);
-    return { user, token };
+    // return { user, token };
+    return token;
   }
 
   async signUser(userId: string, email: string): Promise<string> {
